@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export const Membership = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const { data: plans, isLoading } = useQuery({
     queryKey: ["membership-plans"],
@@ -22,8 +25,48 @@ export const Membership = () => {
     },
   });
 
-  const handleJoin = (plan: any) => {
-    navigate("/auth", { state: { selectedPlan: plan } });
+  const handleJoin = async (plan: any) => {
+    setLoading(true);
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Redirect to auth with selected plan
+        navigate("/auth", { state: { selectedPlan: plan } });
+        return;
+      }
+
+      // Check if plan has Stripe price ID
+      if (!plan.stripe_price_id) {
+        toast.error("Payment system not configured for this plan");
+        setLoading(false);
+        return;
+      }
+
+      // Create checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          priceId: plan.stripe_price_id,
+          planName: plan.name,
+          userId: session.user.id,
+          userEmail: session.user.email,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error("Failed to start checkout process");
+      setLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -82,8 +125,9 @@ export const Membership = () => {
                   onClick={() => handleJoin(plan)}
                   className="w-full"
                   variant={plan.featured ? "default" : "outline"}
+                  disabled={loading}
                 >
-                  {plan.button_text || "Get Started"}
+                  {loading ? "Processing..." : (plan.button_text || "Get Started")}
                 </Button>
               </div>
             ))

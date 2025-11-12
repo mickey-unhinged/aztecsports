@@ -2,14 +2,52 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Trophy, Calendar, Bell } from "lucide-react";
+import { User, LogOut, Trophy, Calendar, Bell, Clock, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch upcoming matches
+  const { data: upcomingMatches } = useQuery({
+    queryKey: ["upcoming-matches"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("matches")
+        .select("*")
+        .eq("status", "upcoming")
+        .eq("published", true)
+        .order("date", { ascending: true })
+        .limit(3);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch recent announcements
+  const { data: announcements } = useQuery({
+    queryKey: ["dashboard-announcements"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
     const checkUser = async () => {
@@ -96,24 +134,113 @@ export default function Dashboard() {
           )}
         </div>
 
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Upcoming Matches */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                Upcoming Matches
+              </CardTitle>
+              <CardDescription>Your next fixtures</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {upcomingMatches && upcomingMatches.length > 0 ? (
+                upcomingMatches.map((match) => (
+                  <div key={match.id} className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline">{match.competition}</Badge>
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(match.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="font-semibold">{match.home_team_name} vs {match.away_team_name}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <MapPin className="w-3 h-3" />
+                      {match.venue}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No upcoming matches scheduled</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Announcements */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="w-5 h-5 text-primary" />
+                Club News
+              </CardTitle>
+              <CardDescription>Latest updates and announcements</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {announcements && announcements.length > 0 ? (
+                announcements.map((announcement) => (
+                  <div key={announcement.id} className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="secondary">{announcement.category}</Badge>
+                      {announcement.priority === "high" && (
+                        <Badge variant="destructive" className="text-xs">High Priority</Badge>
+                      )}
+                    </div>
+                    <h4 className="font-semibold mb-1">{announcement.title}</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{announcement.excerpt}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No announcements available</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="glass-card p-6 rounded-lg hover:shadow-glow transition-all duration-300">
-            <Trophy className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-bold mb-2">Your Achievements</h3>
-            <p className="text-muted-foreground">Track your progress and milestones</p>
-          </div>
+          <Card className="glass-card hover:shadow-glow transition-all duration-300">
+            <CardHeader className="pb-3">
+              <Trophy className="w-12 h-12 text-primary mb-2" />
+              <CardTitle>Achievements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary mb-2">0</div>
+              <p className="text-sm text-muted-foreground">Badges earned</p>
+            </CardContent>
+          </Card>
 
-          <div className="glass-card p-6 rounded-lg hover:shadow-glow transition-all duration-300">
-            <Calendar className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-bold mb-2">Training Schedule</h3>
-            <p className="text-muted-foreground">View your personalized training plan</p>
-          </div>
+          <Card className="glass-card hover:shadow-glow transition-all duration-300">
+            <CardHeader className="pb-3">
+              <Users className="w-12 h-12 text-primary mb-2" />
+              <CardTitle>Training Sessions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary mb-2">
+                {profile?.membership_plans ? "Unlimited" : "0"}
+              </div>
+              <p className="text-sm text-muted-foreground">This month</p>
+            </CardContent>
+          </Card>
 
-          <div className="glass-card p-6 rounded-lg hover:shadow-glow transition-all duration-300">
-            <Bell className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-bold mb-2">Notifications</h3>
-            <p className="text-muted-foreground">Stay updated with club news</p>
-          </div>
+          <Card className="glass-card hover:shadow-glow transition-all duration-300">
+            <CardHeader className="pb-3">
+              <Clock className="w-12 h-12 text-primary mb-2" />
+              <CardTitle>Membership Days</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary mb-2">
+                {profile?.membership_start_date
+                  ? Math.floor(
+                      (new Date().getTime() - new Date(profile.membership_start_date).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : "0"}
+              </div>
+              <p className="text-sm text-muted-foreground">Days active</p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-8 text-center">

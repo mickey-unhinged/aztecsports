@@ -19,7 +19,7 @@ export const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          Welcome to <span className="text-gradient">Aztec United</span>
+          Welcome to <span className="text-primary-foreground drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">Aztec United</span>
         </h1>
         <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
           Join the premier sports club where champions are made. Excellence, teamwork, and passion drive everything we do.
