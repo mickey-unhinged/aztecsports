@@ -1,1 +1,7 @@
 project_id = "scvtivxdtmdwpkvtvxwd"
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.sync-stripe-prices]
+verify_jwt = false
