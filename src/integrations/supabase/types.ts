@@ -321,6 +321,42 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          plan_name: string
+          status: string
+          stripe_payment_id: string
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan_name: string
+          status: string
+          stripe_payment_id: string
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan_name?: string
+          status?: string
+          stripe_payment_id?: string
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -440,6 +476,83 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_bookings: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_bookings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          coach_name: string | null
+          created_at: string
+          date: string
+          description: string | null
+          duration: number
+          id: string
+          location: string
+          max_participants: number | null
+          published: boolean | null
+          session_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          coach_name?: string | null
+          created_at?: string
+          date: string
+          description?: string | null
+          duration?: number
+          id?: string
+          location: string
+          max_participants?: number | null
+          published?: boolean | null
+          session_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          coach_name?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          location?: string
+          max_participants?: number | null
+          published?: boolean | null
+          session_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

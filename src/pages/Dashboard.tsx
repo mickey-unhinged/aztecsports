@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Trophy, Calendar, Bell, Clock, MapPin, Users } from "lucide-react";
+import { User, LogOut, Trophy, Calendar, Bell, Clock, MapPin, Users, CreditCard, Dumbbell } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrainingSchedule } from "@/components/TrainingSchedule";
+import { format } from "date-fns";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -42,6 +45,38 @@ export default function Dashboard() {
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(5);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch payment history
+  const { data: payments } = useQuery({
+    queryKey: ["payment-history", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payment_history")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch training bookings
+  const { data: bookings } = useQuery({
+    queryKey: ["user-training-bookings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("training_bookings")
+        .select("*, training_sessions(*)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -199,7 +234,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="glass-card hover:shadow-glow transition-all duration-300">
             <CardHeader className="pb-3">
               <Trophy className="w-12 h-12 text-primary mb-2" />
@@ -218,9 +253,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-primary mb-2">
-                {profile?.membership_plans ? "Unlimited" : "0"}
+                {bookings?.length || 0}
               </div>
-              <p className="text-sm text-muted-foreground">This month</p>
+              <p className="text-sm text-muted-foreground">Booked sessions</p>
             </CardContent>
           </Card>
 
@@ -242,6 +277,103 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Training and Payment Tabs */}
+        <Tabs defaultValue="training" className="mb-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="training" className="gap-2">
+              <Dumbbell className="w-4 h-4" />
+              Training Schedule
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2">
+              <CreditCard className="w-4 h-4" />
+              Payment History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="training" className="mt-6">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Available Training Sessions</CardTitle>
+                <CardDescription>Book your training sessions below</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrainingSchedule />
+              </CardContent>
+            </Card>
+
+            {bookings && bookings.length > 0 && (
+              <Card className="glass-card mt-6">
+                <CardHeader>
+                  <CardTitle>My Bookings</CardTitle>
+                  <CardDescription>Your upcoming training sessions</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {bookings.map((booking: any) => (
+                    <div key={booking.id} className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-semibold mb-2">{booking.training_sessions.title}</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(booking.training_sessions.date), "MMM dd, yyyy")}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {format(new Date(booking.training_sessions.date), "hh:mm a")}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {booking.training_sessions.location}
+                        </div>
+                        <Badge variant="outline" className="w-fit">
+                          {booking.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="payments" className="mt-6">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Payment History</CardTitle>
+                <CardDescription>Your membership transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {payments && payments.length > 0 ? (
+                  <div className="space-y-4">
+                    {payments.map((payment) => (
+                      <div key={payment.id} className="p-4 rounded-lg bg-muted/50 flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold mb-1">{payment.plan_name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(payment.created_at), "MMMM dd, yyyy")}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary">
+                            {payment.currency.toUpperCase()} {(payment.amount / 100).toFixed(2)}
+                          </div>
+                          <Badge
+                            variant={payment.status === "succeeded" ? "default" : "destructive"}
+                            className="mt-1"
+                          >
+                            {payment.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">No payment history available</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         <div className="mt-8 text-center">
           <Button onClick={() => navigate("/")} variant="outline">

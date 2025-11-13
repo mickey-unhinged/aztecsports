@@ -4,8 +4,12 @@ import { format } from "date-fns";
 import { Calendar, MapPin, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 
 export const Fixtures = () => {
+  const navigate = useNavigate();
+  
   const { data: matches, isLoading } = useQuery({
     queryKey: ["matches"],
     queryFn: async () => {
@@ -60,9 +64,10 @@ export const Fixtures = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {matches && matches.length > 0 ? (
             matches.map((match) => (
-              <div
+              <Card
                 key={match.id}
-                className="glass-card p-6 rounded-lg hover:shadow-glow transition-all duration-300"
+                className="glass-card p-6 hover:shadow-glow transition-all duration-300 cursor-pointer"
+                onClick={() => navigate(`/match/${match.id}`)}
               >
                 <div className="flex items-center justify-between mb-4">
                   <Badge className={getStatusColor(match.status)}>
@@ -104,7 +109,7 @@ export const Fixtures = () => {
                     {match.venue}
                   </div>
                 </div>
-              </div>
+              </Card>
             ))
           ) : (
             <div className="col-span-full text-center text-muted-foreground py-12">
