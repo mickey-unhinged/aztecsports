@@ -11,7 +11,7 @@ export const Membership = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const { data: plans, isLoading } = useQuery({
+  const { data: plans, isLoading, refetch } = useQuery({
     queryKey: ["membership-plans"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,6 +23,10 @@ export const Membership = () => {
       if (error) throw error;
       return data;
     },
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    retry: 1,
   });
 
   const handleJoin = async (plan: any) => {
@@ -32,15 +36,16 @@ export const Membership = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Redirect to auth with selected plan
         navigate("/auth", { state: { selectedPlan: plan } });
         return;
       }
 
+      // Ensure we have the freshest plan data
+      await refetch();
+
       // Check if plan has Stripe price ID
       if (!plan.stripe_price_id) {
-        toast.error("Payment system not configured for this plan");
-        setLoading(false);
+        toast.error("Payment system is not configured for this plan. Please refresh and try again.");
         return;
       }
 
@@ -54,17 +59,18 @@ export const Membership = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Failed to create checkout session');
 
-      if (data?.url) {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      } else {
+      if (!data?.url) {
         throw new Error('No checkout URL received');
       }
-    } catch (error) {
+
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
+    } catch (error: any) {
       console.error('Checkout error:', error);
-      toast.error("Failed to start checkout process");
+      toast.error(error?.message || 'Failed to start checkout process');
+    } finally {
       setLoading(false);
     }
   };
