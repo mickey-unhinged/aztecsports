@@ -57,7 +57,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="text-2xl font-bold text-primary">
-            Aztec United
+            Aztec Sports
           </Link>
 
           {/* Desktop Navigation */}
