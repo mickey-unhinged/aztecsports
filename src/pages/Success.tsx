@@ -22,7 +22,7 @@ export default function Success() {
     // Give Stripe webhook time to process
     const timer = setTimeout(() => {
       setProcessing(false);
-      toast.success("Payment successful! Welcome to Aztec United!");
+      toast.success("Payment successful! Welcome to Aztec Sports!");
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -44,7 +44,7 @@ export default function Success() {
             <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
             <p className="text-muted-foreground mb-6">
-              Welcome to Aztec United! Your membership has been activated.
+              Welcome to Aztec Sports! Your membership has been activated.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate("/dashboard")} className="w-full">

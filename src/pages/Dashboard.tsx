@@ -135,7 +135,7 @@ export default function Dashboard() {
       <nav className="glass-card border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">Aztec United</h1>
+            <h1 className="text-2xl font-bold text-primary">Aztec Sports</h1>
             <Button onClick={handleSignOut} variant="outline" className="gap-2">
               <LogOut className="w-4 h-4" />
               Sign Out

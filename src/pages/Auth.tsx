@@ -77,7 +77,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4">
       <div className="w-full max-w-md">
         <div className="glass-card p-8 rounded-lg">
-          <h1 className="text-3xl font-bold text-center mb-2">Aztec United</h1>
+          <h1 className="text-3xl font-bold text-center mb-2">Aztec Sports</h1>
           <p className="text-center text-muted-foreground mb-6">
             {selectedPlan ? `Join as ${selectedPlan.name} Member` : "Welcome back"}
           </p>
