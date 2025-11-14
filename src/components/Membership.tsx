@@ -36,6 +36,7 @@ export const Membership = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        setLoading(false);
         navigate("/auth", { state: { selectedPlan: plan } });
         return;
       }
@@ -45,9 +46,12 @@ export const Membership = () => {
 
       // Check if plan has Stripe price ID
       if (!plan.stripe_price_id) {
+        setLoading(false);
         toast.error("Payment system is not configured for this plan. Please refresh and try again.");
         return;
       }
+
+      console.log('Creating checkout for plan:', plan.name, 'with price ID:', plan.stripe_price_id);
 
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -59,18 +63,26 @@ export const Membership = () => {
         },
       });
 
-      if (error) throw new Error(error.message || 'Failed to create checkout session');
+      console.log('Checkout response:', { data, error });
 
-      if (!data?.url) {
-        throw new Error('No checkout URL received');
+      if (error) {
+        setLoading(false);
+        throw new Error(error.message || 'Failed to create checkout session');
       }
 
+      if (!data?.url) {
+        setLoading(false);
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      console.log('Redirecting to Stripe checkout:', data.url);
+      
+      // Keep loading state true while redirecting
       // Redirect to Stripe checkout
       window.location.href = data.url;
     } catch (error: any) {
       console.error('Checkout error:', error);
       toast.error(error?.message || 'Failed to start checkout process');
-    } finally {
       setLoading(false);
     }
   };
