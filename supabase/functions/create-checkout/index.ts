@@ -47,6 +47,11 @@ serve(async (req) => {
     });
 
     console.log('Checkout session created:', session.id);
+    console.log('Checkout URL:', session.url);
+
+    if (!session.url) {
+      throw new Error('Stripe did not return a checkout URL');
+    }
 
     return new Response(
       JSON.stringify({ url: session.url }),
