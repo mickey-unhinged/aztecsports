@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Fetch upcoming matches
   const { data: upcomingMatches } = useQuery({
@@ -102,6 +103,19 @@ export default function Dashboard() {
         .single();
 
       setProfile(profileData);
+
+      // Check if user has admin role
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .single();
+
+      if (roles) {
+        setIsAdmin(true);
+      }
+
       setLoading(false);
     };
 
@@ -136,10 +150,18 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Aztec Sports</h1>
-            <Button onClick={handleSignOut} variant="outline" className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button onClick={() => navigate("/admin")} variant="default" className="gap-2">
+                  <Trophy className="w-4 h-4" />
+                  Admin Dashboard
+                </Button>
+              )}
+              <Button onClick={handleSignOut} variant="outline" className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
