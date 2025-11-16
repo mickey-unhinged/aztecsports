@@ -10,6 +10,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const trainingSessionSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
+  date: z.string().min(1, "Date is required"),
+  location: z.string().trim().min(1, "Location is required").max(200, "Location must be less than 200 characters"),
+  duration: z.number().int().min(15, "Duration must be at least 15 minutes").max(480, "Duration must be less than 480 minutes"),
+  coach_name: z.string().max(100, "Coach name must be less than 100 characters").optional(),
+  session_type: z.enum(["practice", "match", "training", "conditioning"]),
+  max_participants: z.number().int().min(1, "Must allow at least 1 participant").max(200, "Maximum 200 participants"),
+  published: z.boolean(),
+});
 
 const AdminTraining = () => {
   const queryClient = useQueryClient();
@@ -93,10 +106,18 @@ const AdminTraining = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
-      updateMutation.mutate({ id: editingItem.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
+    
+    try {
+      const validatedData = trainingSessionSchema.parse(formData);
+      if (editingItem) {
+        updateMutation.mutate({ id: editingItem.id, data: validatedData });
+      } else {
+        createMutation.mutate(validatedData);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
   };
 

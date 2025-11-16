@@ -11,6 +11,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const announcementSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  excerpt: z.string().trim().min(1, "Excerpt is required").max(500, "Excerpt must be less than 500 characters"),
+  content: z.string().max(10000, "Content must be less than 10000 characters").optional(),
+  category: z.enum(["news", "event", "update", "announcement"]),
+  priority: z.enum(["low", "normal", "high"]),
+  published: z.boolean(),
+});
 
 const AdminAnnouncements = () => {
   const queryClient = useQueryClient();
@@ -88,10 +98,18 @@ const AdminAnnouncements = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
-      updateMutation.mutate({ id: editingItem.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
+    
+    try {
+      const validatedData = announcementSchema.parse(formData);
+      if (editingItem) {
+        updateMutation.mutate({ id: editingItem.id, data: validatedData });
+      } else {
+        createMutation.mutate(validatedData);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
   };
 

@@ -11,6 +11,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const matchSchema = z.object({
+  home_team_name: z.string().trim().min(1, "Home team name is required").max(100, "Home team name must be less than 100 characters"),
+  away_team_name: z.string().trim().min(1, "Away team name is required").max(100, "Away team name must be less than 100 characters"),
+  date: z.string().min(1, "Date is required"),
+  venue: z.string().trim().min(1, "Venue is required").max(200, "Venue must be less than 200 characters"),
+  competition: z.string().trim().min(1, "Competition is required").max(100, "Competition must be less than 100 characters"),
+  status: z.enum(["upcoming", "live", "completed"]),
+  home_team_score: z.number().int().min(0, "Score must be 0 or greater").max(999, "Score must be less than 1000"),
+  away_team_score: z.number().int().min(0, "Score must be 0 or greater").max(999, "Score must be less than 1000"),
+  published: z.boolean(),
+});
 
 const AdminMatches = () => {
   const queryClient = useQueryClient();
@@ -94,10 +107,18 @@ const AdminMatches = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingMatch) {
-      updateMutation.mutate({ id: editingMatch.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
+    
+    try {
+      const validatedData = matchSchema.parse(formData);
+      if (editingMatch) {
+        updateMutation.mutate({ id: editingMatch.id, data: validatedData });
+      } else {
+        createMutation.mutate(validatedData);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
   };
 

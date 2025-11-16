@@ -10,6 +10,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const membershipPlanSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  description: z.string().trim().min(1, "Description is required").max(500, "Description must be less than 500 characters"),
+  price: z.string().trim().min(1, "Price is required").max(50, "Price must be less than 50 characters"),
+  period: z.enum(["month", "year"]),
+  features: z.array(z.string().max(200, "Feature must be less than 200 characters")),
+  featured: z.boolean(),
+  published: z.boolean(),
+  stripe_price_id: z.string().max(255, "Stripe price ID must be less than 255 characters").optional(),
+});
 
 const AdminMembership = () => {
   const queryClient = useQueryClient();
@@ -93,10 +105,18 @@ const AdminMembership = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
-      updateMutation.mutate({ id: editingItem.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
+    
+    try {
+      const validatedData = membershipPlanSchema.parse(formData);
+      if (editingItem) {
+        updateMutation.mutate({ id: editingItem.id, data: validatedData });
+      } else {
+        createMutation.mutate(validatedData);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
   };
 
