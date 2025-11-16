@@ -96,6 +96,7 @@ export const Contact = () => {
                 placeholder="Your Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                maxLength={100}
                 required
               />
             </div>
@@ -105,6 +106,7 @@ export const Contact = () => {
                 placeholder="Your Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                maxLength={255}
                 required
               />
             </div>
@@ -113,6 +115,7 @@ export const Contact = () => {
                 placeholder="Subject"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                maxLength={200}
                 required
               />
             </div>
@@ -121,6 +124,7 @@ export const Contact = () => {
                 placeholder="Your Message"
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                maxLength={2000}
                 required
                 rows={5}
               />
