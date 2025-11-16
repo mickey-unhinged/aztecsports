@@ -26,15 +26,17 @@ serve(async (req) => {
     });
 
     const signature = req.headers.get('stripe-signature');
-    const body = await req.text();
-
-    let event;
     
-    if (webhookSecret && signature) {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } else {
-      event = JSON.parse(body);
+    if (!webhookSecret) {
+      throw new Error('Webhook secret not configured. Set STRIPE_WEBHOOK_SECRET environment variable.');
     }
+    
+    if (!signature) {
+      throw new Error('Missing stripe-signature header. Request must be sent from Stripe.');
+    }
+    
+    const body = await req.text();
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
 
     console.log('Webhook event received:', event.type);
 
