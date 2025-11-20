@@ -305,22 +305,22 @@ export default function Dashboard() {
 
         {/* Training and Payment Tabs */}
         <Tabs defaultValue="training" className="mb-8">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="training" className="gap-2">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1">
+            <TabsTrigger value="training" className="gap-2 text-xs md:text-sm">
               <Dumbbell className="w-4 h-4" />
-              Training
+              <span className="hidden sm:inline">Training</span>
             </TabsTrigger>
-            <TabsTrigger value="feed" className="gap-2">
+            <TabsTrigger value="feed" className="gap-2 text-xs md:text-sm">
               <Image className="w-4 h-4" />
-              Feed
+              <span className="hidden sm:inline">Feed</span>
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="gap-2">
+            <TabsTrigger value="achievements" className="gap-2 text-xs md:text-sm">
               <Trophy className="w-4 h-4" />
-              Achievements
+              <span className="hidden sm:inline">Achievements</span>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
+            <TabsTrigger value="payments" className="gap-2 text-xs md:text-sm">
               <CreditCard className="w-4 h-4" />
-              Payments
+              <span className="hidden sm:inline">Payments</span>
             </TabsTrigger>
           </TabsList>
 
