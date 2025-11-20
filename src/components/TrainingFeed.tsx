@@ -7,8 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { ImagePlus, Video, Trash2, Loader2 } from "lucide-react";
+import { ImagePlus, Trash2, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export const TrainingFeed = ({ userId }: { userId: string }) => {
   const [caption, setCaption] = useState("");
@@ -165,63 +172,85 @@ export const TrainingFeed = ({ userId }: { userId: string }) => {
         </CardContent>
       </Card>
 
-      {/* Feed Posts */}
+      {/* Feed Posts - Reels Style */}
       {isLoading ? (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
         </div>
       ) : feedPosts && feedPosts.length > 0 ? (
-        <div className="space-y-4">
-          {feedPosts.map((post) => (
-            <Card key={post.id} className="glass-card border-0">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback>
-                        {post.profile?.full_name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">
-                        {post.profile?.full_name || "Member"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(post.created_at), "PPp")}
-                      </p>
+        <Carousel
+          orientation="vertical"
+          className="w-full h-[600px] rounded-lg overflow-hidden"
+        >
+          <CarouselContent className="h-[600px]">
+            {feedPosts.map((post) => (
+              <CarouselItem key={post.id} className="h-[600px]">
+                <div className="relative h-full w-full bg-black rounded-lg overflow-hidden group">
+                  {/* Media */}
+                  {post.media_type === "image" ? (
+                    <img
+                      src={post.media_url}
+                      alt="Training post"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={post.media_url}
+                      controls
+                      loop
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  
+                  {/* Overlay Info */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                  
+                  {/* User Info & Caption */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white pointer-events-auto">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Avatar className="border-2 border-white">
+                            <AvatarFallback className="bg-primary text-white">
+                              {post.profile?.full_name?.[0] || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold text-lg">
+                              {post.profile?.full_name || "Member"}
+                            </p>
+                            <p className="text-xs text-gray-300">
+                              {format(new Date(post.created_at), "PPp")}
+                            </p>
+                          </div>
+                        </div>
+                        {post.caption && (
+                          <p className="text-sm line-clamp-3">{post.caption}</p>
+                        )}
+                      </div>
+                      
+                      {/* Delete Button */}
+                      {post.user_id === userId && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteMutation.mutate(post.id)}
+                          className="shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  {post.user_id === userId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteMutation.mutate(post.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {post.caption && <p>{post.caption}</p>}
-                
-                {post.media_type === "image" ? (
-                  <img
-                    src={post.media_url}
-                    alt="Training post"
-                    className="w-full rounded-lg"
-                  />
-                ) : (
-                  <video
-                    src={post.media_url}
-                    controls
-                    className="w-full rounded-lg"
-                  />
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          
+          {/* Navigation Buttons */}
+          <CarouselPrevious className="left-1/2 -translate-x-1/2 top-4" />
+          <CarouselNext className="left-1/2 -translate-x-1/2 bottom-4" />
+        </Carousel>
       ) : (
         <Card className="glass-card border-0">
           <CardContent className="py-8 text-center text-muted-foreground">
