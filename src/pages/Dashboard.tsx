@@ -88,6 +88,22 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  // Fetch user achievements
+  const { data: achievements = [] } = useQuery({
+    queryKey: ["user-achievements", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_achievements")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("date_achieved", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -266,8 +282,22 @@ export default function Dashboard() {
               <CardTitle>Achievements</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary mb-2">0</div>
+              <div className="text-3xl font-bold text-primary mb-2">{achievements?.length || 0}</div>
               <p className="text-sm text-muted-foreground">Badges earned</p>
+              {achievements && achievements.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {achievements.slice(0, 2).map((achievement) => (
+                    <div key={achievement.id} className="text-xs p-2 rounded bg-muted/30">
+                      <p className="font-medium truncate">{achievement.title}</p>
+                      {achievement.date_achieved && (
+                        <p className="text-muted-foreground">
+                          {format(new Date(achievement.date_achieved), "PP")}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
