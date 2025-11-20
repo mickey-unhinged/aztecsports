@@ -3,6 +3,7 @@ import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/aztec-logo.png";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,6 +46,7 @@ export const Navbar = () => {
     { label: "Fixtures", id: "fixtures" },
     { label: "News", id: "announcements" },
     { label: "Membership", id: "membership" },
+    { label: "FAQ", id: "faq" },
     { label: "Contact", id: "contact" },
   ];
 
@@ -56,8 +58,9 @@ export const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            Aztec Sports
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logo} alt="Aztec Sports" className="h-10 w-10" />
+            <span className="text-2xl font-bold text-primary">Aztec Sports</span>
           </Link>
 
           {/* Desktop Navigation */}

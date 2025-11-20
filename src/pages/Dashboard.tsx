@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Trophy, Calendar, Bell, Clock, MapPin, Users, CreditCard, Dumbbell } from "lucide-react";
+import { User, LogOut, Trophy, Calendar, Bell, Clock, MapPin, Users, CreditCard, Dumbbell, Image } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrainingSchedule } from "@/components/TrainingSchedule";
+import { TrainingFeed } from "@/components/TrainingFeed";
+import { AchievementsManager } from "@/components/AchievementsManager";
 import { format } from "date-fns";
+import { showNotificationWithSound } from "@/components/NotificationToast";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -132,7 +135,7 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    toast.success("Signed out successfully");
+    showNotificationWithSound("Signed out successfully", "success");
     navigate("/");
   };
 
@@ -302,14 +305,22 @@ export default function Dashboard() {
 
         {/* Training and Payment Tabs */}
         <Tabs defaultValue="training" className="mb-8">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="training" className="gap-2">
               <Dumbbell className="w-4 h-4" />
-              Training Schedule
+              Training
+            </TabsTrigger>
+            <TabsTrigger value="feed" className="gap-2">
+              <Image className="w-4 h-4" />
+              Feed
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="gap-2">
+              <Trophy className="w-4 h-4" />
+              Achievements
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <CreditCard className="w-4 h-4" />
-              Payment History
+              Payments
             </TabsTrigger>
           </TabsList>
 
@@ -356,6 +367,14 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="feed" className="mt-6">
+            <TrainingFeed userId={user.id} />
+          </TabsContent>
+
+          <TabsContent value="achievements" className="mt-6">
+            <AchievementsManager userId={user.id} />
           </TabsContent>
 
           <TabsContent value="payments" className="mt-6">
