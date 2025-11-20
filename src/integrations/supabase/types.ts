@@ -509,6 +509,33 @@ export type Database = {
           },
         ]
       }
+      training_feed: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_sessions: {
         Row: {
           coach_name: string | null
@@ -551,6 +578,36 @@ export type Database = {
           session_type?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          created_at: string | null
+          date_achieved: string | null
+          description: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_achieved?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_achieved?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
