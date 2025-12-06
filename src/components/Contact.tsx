@@ -63,29 +63,40 @@ export const Contact = () => {
             
             {contactInfo && (
               <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <MapPin className="w-6 h-6 text-primary flex-shrink-0" />
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 group hover:bg-primary/5 p-2 -m-2 rounded-lg transition-colors"
+                >
+                  <MapPin className="w-6 h-6 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" />
                   <div>
                     <h4 className="font-semibold mb-1">Address</h4>
-                    <p className="text-muted-foreground">{contactInfo.address}</p>
+                    <p className="text-muted-foreground group-hover:text-primary transition-colors">{contactInfo.address}</p>
                   </div>
-                </div>
+                </a>
 
-                <div className="flex items-start gap-4">
-                  <Phone className="w-6 h-6 text-primary flex-shrink-0" />
+                <a 
+                  href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
+                  className="flex items-start gap-4 group hover:bg-primary/5 p-2 -m-2 rounded-lg transition-colors"
+                >
+                  <Phone className="w-6 h-6 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" />
                   <div>
                     <h4 className="font-semibold mb-1">Phone</h4>
-                    <p className="text-muted-foreground">{contactInfo.phone}</p>
+                    <p className="text-muted-foreground group-hover:text-primary transition-colors">{contactInfo.phone}</p>
                   </div>
-                </div>
+                </a>
 
-                <div className="flex items-start gap-4">
-                  <Mail className="w-6 h-6 text-primary flex-shrink-0" />
+                <a 
+                  href={`mailto:${contactInfo.email}`}
+                  className="flex items-start gap-4 group hover:bg-primary/5 p-2 -m-2 rounded-lg transition-colors"
+                >
+                  <Mail className="w-6 h-6 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" />
                   <div>
                     <h4 className="font-semibold mb-1">Email</h4>
-                    <p className="text-muted-foreground">{contactInfo.email}</p>
+                    <p className="text-muted-foreground group-hover:text-primary transition-colors">{contactInfo.email}</p>
                   </div>
-                </div>
+                </a>
               </div>
             )}
           </div>
